@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Graphics</title>
+</head>
+
+<body>
+  <h1>DDA (Digital Differential Algorithm) - Line generation algorithm</h1>
+
+  <!-- Pixel coordinates input form -->
+  <form onsubmit="event.preventDefault()">
+    <div>
+      <label for="fromXAxis">Draw from</label>
+      <input id="fromXAxis" type="number" placeholder="X Axis" required value="10" />
+      <input id="fromYAxis" type="number" placeholder="Y Axis" required value="10" />
+    </div>
+
+    <div style="margin-top: 8px">
+      <label for="toXAxis">Draw to</label>
+      <input id="toXAxis" type="number" placeholder="Y Axis" required value="800" />
+      <input id="toYAxis" type="number" placeholder="Y Axis" required value="600" />
+    </div>
+
+    <div style="margin-top: 8px;">
+      <label for="plotDelay">Plot Delay</label>
+      <input id="plotDelay" type="number" value="1" required>
+    </div>
+
+    <button style="margin-top: 8px;" id="generate" style="margin-top: 8px;">Generate</button>
+  </form>
+
+  <!-- Pixel coorinate input form end -->
+
+  <!-- Pixels drawing area -->
+  <canvas id="drawArea" width="800" height="800"></canvas>
+
+  <script>
+    /**
+     * Stores X and Y pixel coordinates. 
+     */
+    class Point {
+
+      /**
+       * Creates a new Point object.
+       * @param {number} x - The X coordinate of the pixel.
+       * @param {number} y - The Y coordinate of the pixel.
+       */
+
+      constructor(x, y) {
+        /**
+         * The x coordinate of the point for pixel.
+         * @type {number}
+         */
+        this.x = x;
+
+        /**
+         * The y coordinate of the point for pixel.
+         * type {number}
+         */
+        this.y = y;
+      }
+    }
+
+    /**
+     * Draws pixels in the canvas screen.
+     *
+     * @param {Array<Point>} points - List of points containing 2d X and Y coordinates.
+     * @param {number} plotDelay - Delay in seconds while plotting pixels.
+     */
+    function drawPixels(coordinates, plotDelay) {
+      const canvas = document.getElementById("drawArea");
+      const ctx = canvas.getContext("2d");
+
+      // Completely clear pixels from exisiting instance.
+      ctx.reset();
+
+      ctx.fillStyle = "red";
+
+      let index = 0;
+
+      const interval = setInterval(function () {
+        if (index >= coordinates.length) {
+          clearInterval(interval);
+          return;
+        }
+
+        const point = coordinates[index];
+        ctx.fillRect(point.x, point.y, 1, 1);
+        index++;
+      }, plotDelay);
+    }
+
+    /**
+     * Generates points using Digital Differential Algorithm.
+     *
+     * @param {Point} fromPoint - Starting point for line.
+     * @param {Point} toPoint - End point for line.
+     * @returns {Array<Point>} List of 2d points containing X and Y coordinates.
+     */
+    function generatePoints(fromPoint, toPoint) {
+      /**
+       * Calculates the dx form the given points.
+       * @type {number}
+       */
+      const dx = toPoint.x - fromPoint.x;
+
+      /**
+       * Calculates the dy from the given points.
+       * @type {number}
+       */
+      const dy = toPoint.y - fromPoint.y;
+
+      /**
+       * Slope of the line from the given points.
+       * @type {number}
+       */
+      const slope = dy / dx;
+
+      /**
+       * The number of steps require to reach from point X to end of line point Y.
+       * @type {number}
+       */
+      const steps = Math.max(Math.abs(dx), Math.abs(dy));
+
+      /**
+       * Point coordinates which forms Line.
+       * @type {Array<Point>}
+       */
+      let points = [];
+      const initialXAxis = fromPoint.x;
+
+      // Adds initial starting point.
+      points.push(fromPoint);
+
+      let currentXPoint = fromPoint.x;
+      let currentYPoint = fromPoint.y;
+
+      let incrementY = dy / steps;
+
+      for (let i = 0; i < steps; i++) {
+        /*
+         * Increments X axis by 1 in each iteration.
+         */
+        currentXPoint += 1;
+        currentYPoint += incrementY;
+        const newPoint = new Point(currentXPoint, currentYPoint);
+        points.push(newPoint);
+      }
+
+      return points;
+    }
+
+    const generateBtn = document.getElementById("generate");
+    generateBtn.addEventListener("click", function () {
+      const fromXAxis = parseInt(document.getElementById("fromXAxis").value);
+      const fromYAxis = parseInt(document.getElementById("fromYAxis").value);
+
+      const toXAxis = parseInt(document.getElementById("toXAxis").value);
+      const toYAxis = parseInt(document.getElementById("toYAxis").value);
+
+      const fromPoint = new Point(fromXAxis, fromYAxis);
+      const toPoint = new Point(toXAxis, toYAxis);
+
+      const points = generatePoints(fromPoint, toPoint);
+      const plotDelay = parseInt(document.getElementById("plotDelay").value);
+
+      drawPixels(points, plotDelay);
+    });
+
+  </script>
+</body>
+
+</html>
